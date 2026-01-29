@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'second.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +40,22 @@ class _AppBodyState extends State<AppBody> {
       body: Center(
         child: Column(
           // Start Project
+
+children: [
+  Column(
+    children: [
+      Text(" hi project "),
+      ElevatedButton(onPressed:(){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>const Second()),
+        );
+      }, child: Text(
+        "next"
+      )
+      )
+    ],
+  )
+],
+        
 
         ),
       ),
