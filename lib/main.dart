@@ -28,35 +28,39 @@ class _AppBodyState extends State<AppBody> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("App Title", style: TextStyle(
-          fontSize: 25,
-          fontWeight: FontWeight.bold,
-        ),),
+        title: Text(
+          "App Title",
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.amber,
         centerTitle: true,
       ),
-
-
       body: Center(
         child: Column(
           // Start Project
 
-children: [
-  Column(
-    children: [
-      Text(" hi project "),
-      ElevatedButton(onPressed:(){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>const Second()),
-        );
-      }, child: Text(
-        "next"
-      )
-      )
-    ],
-  )
-],
-        
-
+          children: [
+            Column(
+              children: [
+                Text(" hi project "),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Second()),
+                      );
+                    },
+                    child: Text("next", style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold
+                    ),),
+                    )
+              ],
+            )
+          ],
         ),
       ),
     );
