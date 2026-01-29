@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'second.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,7 +45,10 @@ children: [
   Column(
     children: [
       Text(" hi project "),
-      ElevatedButton(onPressed: null, child: Text(
+      ElevatedButton(onPressed:(){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>const Second()),
+        );
+      }, child: Text(
         "next"
       )
       )
