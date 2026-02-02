@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -83,13 +84,103 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Below app bar
-
-      
-
-
-/// Above App bar
-
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/nike_logo.png',
+              height: 28,
+              errorBuilder: (_, __, ___) => const Icon(
+                Icons.sports_soccer,
+                size: 28,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              "Nike",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: Colors.black,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.grey[50]!],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          // Search Toggle
+          IconButton(
+            onPressed: () => setState(() => _showSearch = !_showSearch),
+            icon: Icon(
+              _showSearch ? Icons.close : Icons.search,
+              color: Colors.black,
+              size: 24,
+            ),
+          ),
+          // Cart with Badge
+          Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.orange,
+                  size: 24,
+                ),
+              ),
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: const Text(
+                    '2',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
       body: Column(
         children: [
           // Expandable Search Bar
@@ -195,11 +286,10 @@ class _HomePageState extends State<HomePage> {
                       itemCount: getFilteredShoes().length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.6
-                          ),
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.6),
                       itemBuilder: (context, index) {
                         return ProductCard(shoe: getFilteredShoes()[index]);
                       },
@@ -234,7 +324,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: (){
+      onTap: () {
         print("dsdsd");
       },
       child: Card(
@@ -243,7 +333,8 @@ class ProductCard extends StatelessWidget {
         child: Column(
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: Image.asset(
                 shoe['image']!,
                 height: 150,
