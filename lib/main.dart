@@ -49,39 +49,71 @@ class _HomePageState extends State<HomePage> {
 
   final Map<String, List<Map<String, String>>> shoesData = {
     'All': [
-      {'id': '1','name': 'Shoe 1', 'image': 'assets/images/shoe1.jpg', 'price': '99.99'},
-      {'id': '2','name': 'Shoe 2', 'image': 'assets/images/shoe2.jpg', 'price': '129.99'},
-      {'id': '3','name': 'Shoe 3', 'image': 'assets/images/shoe3.jpg', 'price': '139.99'},
+      {'id': '1','name': 'M-#101', 'image': 'assets/images/shoe1.jpg', 'price': '14.00'},  // M1
+      {'id': '7','name': 'K-#101', 'image': 'assets/images/shoe7.jpg', 'price': '7.00'},  // K1
+      {'id': '2','name': 'M-#102', 'image': 'assets/images/shoe2.jpg', 'price': '15.00'}, // M2
+      {'id': '13','name': 'L-#101', 'image': 'assets/images/shoe13.jpg', 'price': '23.00'},  // L1 
+      {'id': '14','name': 'L-#102', 'image': 'assets/images/shoe14.jpg', 'price': '19.00'}, // L2
+      {'id': '3','name': 'M-#103', 'image': 'assets/images/shoe3.jpg', 'price': '16.00'}, // M3
+      {'id': '11','name': 'K-#105', 'image': 'assets/images/shoe11.png', 'price': '4.00'}, //K5
+      {'id': '4','name': 'M-#104', 'image': 'assets/images/shoe4.jpg', 'price': '14.00'}, // M4
+      {'id': '8','name': 'K-#102', 'image': 'assets/images/shoe8.png', 'price': '5.00'}, // K2
+     {'id': '18','name': 'L-#106', 'image': 'assets/images/shoe18.jpg', 'price': '13.00'}, // L6
+      {'id': '5','name': 'M-#105', 'image': 'assets/images/shoe5.jpg', 'price': '20.00'}, // M5
+      {'id': '15','name': 'L-#103', 'image': 'assets/images/shoe15.jpg', 'price': '10.00'}, // L3
+      {'id': '16','name': 'L-#104', 'image': 'assets/images/shoe16.jpg', 'price': '17.00'}, // L4
+      {'id': '6','name': 'M-#106', 'image': 'assets/images/shoe6.jpg', 'price': '21.00'}, //M6
+      {'id': '17','name': 'L-#105', 'image': 'assets/images/shoe17.jpg', 'price': '20.00'}, // L5
+      {'id': '9','name': 'K-#103', 'image': 'assets/images/shoe9.jpg', 'price': '8.00'}, // K3
+      {'id': '10','name': 'K-#104', 'image': 'assets/images/shoe10.jpg', 'price': '6.00'}, // K4
+      {'id': '12','name': 'K-#106', 'image': 'assets/images/shoe12.jpg', 'price': '9.00'}, //K6
+
+
     ],
+
+
     'Men': [
-      {
-        'id': '1',
-        'name': 'Men Shoe 1',
-        'image': 'assets/images/shoe1.jpg',
-        'price': '119.99',
-      },
-      {
-        'id': '2',
-        'name': 'Men Shoe 2',
-        'image': 'assets/images/shoe2.jpg',
-        'price': '149.99',
-      },
+      {'id': '1','name': 'M-#101', 'image': 'assets/images/shoe1.jpg', 'price': '14.00'},  // M1
+      {'id': '2','name': 'M-#102', 'image': 'assets/images/shoe2.jpg', 'price': '15.00'}, // M2
+      {'id': '3','name': 'M-#103', 'image': 'assets/images/shoe3.jpg', 'price': '16.00'}, // M3
+      {'id': '4','name': 'M-#104', 'image': 'assets/images/shoe4.jpg', 'price': '14.00'}, // M4
+      {'id': '5','name': 'M-#105', 'image': 'assets/images/shoe5.jpg', 'price': '20.00'}, // M5
+      {'id': '6','name': 'M-#106', 'image': 'assets/images/shoe6.jpg', 'price': '21.00'}, //M6
+      
+
     ],
+
+
+
+
     'Women': [
-      {
-        'id': '3',
-        'name': 'Women Shoe 1',
-        'image': 'assets/images/shoe3.jpg',
-        'price': '139.99',
-      },
+
+       {'id': '13','name': 'L-#101', 'image': 'assets/images/shoe13.jpg', 'price': '23.00'},  // L1
+      {'id': '14','name': 'L-#102', 'image': 'assets/images/shoe14.jpg', 'price': '19.00'}, // L2
+      {'id': '15','name': 'L-#103', 'image': 'assets/images/shoe15.jpg', 'price': '10.00'}, // L3
+      {'id': '16','name': 'L-#104', 'image': 'assets/images/shoe16.jpg', 'price': '17.00'}, // L4
+      {'id': '17','name': 'L-#105', 'image': 'assets/images/shoe17.jpg', 'price': '20.00'}, // L5
+      {'id': '18','name': 'L-#106', 'image': 'assets/images/shoe18.jpg', 'price': '13.00'}, // L6
+
     ],
+
+
+
+
     'Kids': [
-      {
-        'id': '2',
-        'name': 'Kids Shoe 1',
-        'image': 'assets/images/shoe2.jpg',
-        'price': '79.99',
-      },
+
+       {'id': '7','name': 'K-#101', 'image': 'assets/images/shoe7.jpg', 'price': '7.00'},  // K1
+      {'id': '8','name': 'K-#102', 'image': 'assets/images/shoe8.png', 'price': '5.00'}, // K2
+      {'id': '9','name': 'K-#103', 'image': 'assets/images/shoe9.jpg', 'price': '8.00'}, // K3
+      {'id': '10','name': 'K-#104', 'image': 'assets/images/shoe10.jpg', 'price': '6.00'}, // K4
+      {'id': '11','name': 'K-#105', 'image': 'assets/images/shoe11.png', 'price': '4.00'}, //K5
+      {'id': '12','name': 'K-#106', 'image': 'assets/images/shoe12.jpg', 'price': '9.00'}, //K6
+
+
+
+
+
+
     ],
   };
 
