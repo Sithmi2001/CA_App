@@ -41,7 +41,7 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
   // Insert item into the Cart in Supabase
   Future<void> addToCart() async {
     try {
-      final data = await Supabase.instance.client.from('cart').insert({
+      await Supabase.instance.client.from('cart').insert({
         'shoe_id': int.parse(widget.shoeId),
         'name': widget.shoeName,
         'price': double.parse(widget.shoePrice),
