@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
-//import 'second.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'second.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize( 
+      url: 'https://zgmgxmuxltrfjslovbgp.supabase.co',
+      anonKey: 'sb_publishable_7aV92sgTyYX7sI0qRm_yIA_v4qpUBDk',
+
+  );
+
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
@@ -39,17 +49,19 @@ class _HomePageState extends State<HomePage> {
 
   final Map<String, List<Map<String, String>>> shoesData = {
     'All': [
-      {'name': 'Shoe 1', 'image': 'assets/images/shoe1.jpg', 'price': '99.99'},
-      {'name': 'Shoe 2', 'image': 'assets/images/shoe2.jpg', 'price': '129.99'},
-      {'name': 'Shoe 3', 'image': 'assets/images/shoe3.jpg', 'price': '139.99'},
+      {'id': '1','name': 'Shoe 1', 'image': 'assets/images/shoe1.jpg', 'price': '99.99'},
+      {'id': '2','name': 'Shoe 2', 'image': 'assets/images/shoe2.jpg', 'price': '129.99'},
+      {'id': '3','name': 'Shoe 3', 'image': 'assets/images/shoe3.jpg', 'price': '139.99'},
     ],
     'Men': [
       {
+        'id': '1',
         'name': 'Men Shoe 1',
         'image': 'assets/images/shoe1.jpg',
         'price': '119.99',
       },
       {
+        'id': '2',
         'name': 'Men Shoe 2',
         'image': 'assets/images/shoe2.jpg',
         'price': '149.99',
@@ -57,6 +69,7 @@ class _HomePageState extends State<HomePage> {
     ],
     'Women': [
       {
+        'id': '3',
         'name': 'Women Shoe 1',
         'image': 'assets/images/shoe3.jpg',
         'price': '139.99',
@@ -64,6 +77,7 @@ class _HomePageState extends State<HomePage> {
     ],
     'Kids': [
       {
+        'id': '2',
         'name': 'Kids Shoe 1',
         'image': 'assets/images/shoe2.jpg',
         'price': '79.99',
@@ -325,7 +339,20 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        print("dsdsd");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShoeDetailPage(
+              shoeName: shoe['name']!,
+              shoeImage: shoe['image']!,
+              shoePrice: shoe['price']!,
+              shoeDescription: 'This is a description of the shoe.',
+              originalPrice: '', // Add original price if needed
+              shoeRating: '4.5', // Add shoe rating if needed
+              shoeId: shoe['id']!, // Pass the shoe id
+            ),
+          ),
+        );
       },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -407,6 +434,7 @@ class ProductCard extends StatelessWidget {
     );
   }
 }
+
 
 class NikeCategoryButton extends StatelessWidget {
   final String label;
