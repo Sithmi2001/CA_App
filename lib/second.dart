@@ -18,7 +18,7 @@ class ShoeDetailPage extends StatefulWidget {
     required this.originalPrice,
     required this.shoeDescription,
     required this.shoeRating,
-     required this.shoeId,
+    required this.shoeId,
   });
 
   @override
@@ -29,42 +29,41 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
   String _selectedSize = 'Size 10';
   String _selectedColor = 'Orange';
 
-  final List<String> _sizes = ['Size 8', 'Size 9', 'Size 10', 'Size 11', 'Size 12'];
+  final List<String> _sizes = [
+    'Size 8',
+    'Size 9',
+    'Size 10',
+    'Size 11',
+    'Size 12'
+  ];
   final List<String> _colors = ['Orange', 'Black', 'Blue', 'Red'];
 
- 
- // Insert item into the Cart in Supabase
- Future<void> addToCart() async {
-  
-  try {
-    final data = await Supabase.instance.client
-        .from('cart')
-        .insert({
-          'shoe_id': int.parse(widget.shoeId),
-          'name': widget.shoeName,
-          'price': double.parse(widget.shoePrice),
-          'color': _selectedColor,
-          'size': _selectedSize,
-        })
-        .select();
+  // Insert item into the Cart in Supabase
+  Future<void> addToCart() async {
+    try {
+      final data = await Supabase.instance.client.from('cart').insert({
+        'shoe_id': int.parse(widget.shoeId),
+        'name': widget.shoeName,
+        'price': double.parse(widget.shoePrice),
+        'color': _selectedColor,
+        'size': _selectedSize,
+      }).select();
 
-    // Success
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added to Cart ($_selectedSize, $_selectedColor)'),
-      ),
-    );
-  } catch (e) {
-    print("Insert Error: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Failed to add to cart'),
-      ),
-    );
+      // Success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added to Cart ($_selectedSize, $_selectedColor)'),
+        ),
+      );
+    } catch (e) {
+      print("Insert Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add to cart'),
+        ),
+      );
+    }
   }
-}
-
-
 
   Color _getColorFromName(String name) {
     switch (name) {
@@ -232,13 +231,11 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.star,
-                              color: Colors.amber, size: 18),
+                          const Icon(Icons.star, color: Colors.amber, size: 18),
                           const SizedBox(width: 4),
                           Text(
                             widget.shoeRating,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -251,8 +248,57 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
             const SizedBox(height: 8),
 
             // NAME + CATEGORY + FAVORITE / SHARE
-            // Add Here
-            // *************************************************************************************
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.shoeName,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Basketball Shoes',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.favorite_border,
+                    color: Colors.redAccent,
+                    size: 22,
+                  ),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 16),
 
@@ -296,8 +342,8 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
                 // Size dropdown
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
@@ -313,8 +359,7 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
                       child: DropdownButton<String>(
                         value: _selectedSize,
                         isExpanded: true,
-                        icon:
-                            const Icon(Icons.keyboard_arrow_down_rounded),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
@@ -341,8 +386,8 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
                 // Color dropdown
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
@@ -358,8 +403,7 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
                       child: DropdownButton<String>(
                         value: _selectedColor,
                         isExpanded: true,
-                        icon:
-                            const Icon(Icons.keyboard_arrow_down_rounded),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
@@ -375,8 +419,7 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
                                       height: 18,
                                       decoration: BoxDecoration(
                                         color: _getColorFromName(colorName),
-                                        borderRadius:
-                                            BorderRadius.circular(6),
+                                        borderRadius: BorderRadius.circular(6),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -420,10 +463,51 @@ class _ShoeDetailPageState extends State<ShoeDetailPage> {
             // BOTTOM BUTTONS
             Row(
               children: [
-                ///
-                ///
-                ///Second part add here
-                //************************* */
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: addToCart,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.black),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add to Cart',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Handle buying logic here
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Buying Now ($_selectedSize, $_selectedColor)',
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'Buy Now',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
