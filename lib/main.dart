@@ -58,13 +58,7 @@ class _HomePageState extends State<HomePage> {
         'price': '14.00',
         'category': 'Men'
       }, // M1
-      {
-        'id': '7',
-        'name': 'K-#101',
-        'image': 'assets/images/shoe7.jpg',
-        'price': '7.00',
-        'category': 'Kids'
-      }, // K1
+      
       {
         'id': '2',
         'name': 'M-#102',
@@ -72,6 +66,13 @@ class _HomePageState extends State<HomePage> {
         'price': '15.00',
         'category': 'Men'
       }, // M2
+      {
+        'id': '7',
+        'name': 'K-#101',
+        'image': 'assets/images/shoe7.jpg',
+        'price': '7.00',
+        'category': 'Kids'
+      }, // K1
       {
         'id': '13',
         'name': 'L-#101',
