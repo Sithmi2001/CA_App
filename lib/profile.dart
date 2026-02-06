@@ -14,14 +14,12 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoggedIn = false;
   Map<String, dynamic>? _userData;
   
-  // Controllers for signup
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   
-  // Controllers for login
   final TextEditingController _loginEmailController = TextEditingController();
   final TextEditingController _loginPasswordController = TextEditingController();
 
@@ -31,247 +29,134 @@ class _ProfilePageState extends State<ProfilePage> {
     _checkLoginStatus();
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _fullNameController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    _loginEmailController.dispose();
-    _loginPasswordController.dispose();
-    super.dispose();
-  }
-
   Future<void> _checkLoginStatus() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        await _fetchUserData(user.id);
-      }
-    } catch (e) {
-      print("Error checking login: $e");
-    }
-  }
-
-  Future<void> _fetchUserData(String userId) async {
-    try {
-      final response = await _supabase
+      final List<dynamic> response = await _supabase
           .from('users')
-          .select('*')
-          .eq('id', userId)
-          .single();
+          .select()
+          .limit(1);
       
-      if (response != null) {
+      if (response.isNotEmpty) {
         setState(() {
-          _userData = response;
+          _userData = response[0];
           _isLoggedIn = true;
         });
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      print("Check login: $e");
     }
   }
 
   Future<void> _signUp() async {
-    if (!_validateSignUpForm()) return;
-    
-    // Add delay to prevent rate limiting
-    await Future.delayed(const Duration(milliseconds: 500));
+    if (_emailController.text.isEmpty || 
+        _passwordController.text.isEmpty || 
+        _fullNameController.text.isEmpty) {
+      _showSnackBar('Fill required fields', Colors.red);
+      return;
+    }
     
     setState(() => _isLoading = true);
     
     try {
-      // 1. Sign up with Supabase Auth
-      final authResponse = await _supabase.auth.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      final userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
       
-      if (authResponse.user == null) {
-        throw Exception('Signup failed: User not created');
-      }
-      
-      // 2. Insert user data into users table WITHOUT password
       await _supabase.from('users').insert({
-        'id': authResponse.user!.id,
-        'email': _emailController.text.trim(),
+        'id': userId,
+        'email': email,
+        'password': password,
         'full_name': _fullNameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
         'created_at': DateTime.now().toIso8601String(),
       });
       
-      // 3. Fetch user data
-      await _fetchUserData(authResponse.user!.id);
+      print("✅ User inserted: $userId");
       
-      // 4. Clear form
+      setState(() {
+        _userData = {
+          'id': userId,
+          'email': email,
+          'full_name': _fullNameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'address': _addressController.text.trim(),
+          'created_at': DateTime.now().toIso8601String(),
+        };
+        _isLoggedIn = true;
+      });
+      
       _clearSignUpForm();
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      _showSnackBar('✅ Account created!', Colors.green);
       
     } catch (e) {
-      String errorMessage = 'Signup failed';
-      
-      // Handle specific Supabase auth errors
-      if (e is AuthException) {
-        switch (e.code) {
-          case 'over_email_send_rate_limit':
-            errorMessage = 'Too many signup attempts. Please try again in an hour.';
-            break;
-          case 'user_already_exists':
-            errorMessage = 'An account with this email already exists.';
-            break;
-          case 'email_not_confirmed':
-            errorMessage = 'Please confirm your email address. Check your inbox.';
-            break;
-          default:
-            errorMessage = e.message;
-        }
-      } else if (e is PostgrestException) {
-        errorMessage = 'Database error: ${e.message}';
-      }
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      print("🚨 Signup error: $e");
+      _showSnackBar('Error: $e', Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _login() async {
-    if (!_validateLoginForm()) return;
+    if (_loginEmailController.text.isEmpty || 
+        _loginPasswordController.text.isEmpty) {
+      _showSnackBar('Enter email and password', Colors.red);
+      return;
+    }
     
     setState(() => _isLoading = true);
     
     try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: _loginEmailController.text.trim(),
-        password: _loginPasswordController.text.trim(),
-      );
+      final email = _loginEmailController.text.trim();
+      final password = _loginPasswordController.text.trim();
       
-      if (response.user != null) {
-        await _fetchUserData(response.user!.id);
-        _clearLoginForm();
+      final List<dynamic> response = await _supabase
+          .from('users')
+          .select()
+          .eq('email', email)
+          .eq('password', password);
+      
+      print("🔍 Found ${response.length} users");
+      
+      if (response.isNotEmpty) {
+        setState(() {
+          _userData = response[0];
+          _isLoggedIn = true;
+        });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Logged in successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        _loginEmailController.clear();
+        _loginPasswordController.clear();
+        
+        _showSnackBar('✅ Logged in!', Colors.green);
+      } else {
+        _showSnackBar('❌ Wrong email or password', Colors.red);
       }
+      
     } catch (e) {
-      String errorMessage = 'Login failed';
-      
-      if (e is AuthException) {
-        switch (e.code) {
-          case 'invalid_credentials':
-            errorMessage = 'Invalid email or password';
-            break;
-          case 'email_not_confirmed':
-            errorMessage = 'Please confirm your email address first';
-            break;
-          default:
-            errorMessage = e.message;
-        }
-      }
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-        ),
-      );
+      print("🚨 Login error: $e");
+      _showSnackBar('❌ Login failed', Colors.red);
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _logout() async {
-    try {
-      await _supabase.auth.signOut();
-      setState(() {
-        _isLoggedIn = false;
-        _userData = null;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logged out successfully'),
-          backgroundColor: Colors.blue,
-        ),
-      );
-    } catch (e) {
-      print("Logout error: $e");
-    }
+    setState(() {
+      _isLoggedIn = false;
+      _userData = null;
+    });
+    
+    _showSnackBar('👋 Logged out', Colors.blue);
   }
 
-  bool _validateSignUpForm() {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    final fullName = _fullNameController.text.trim();
-    
-    if (email.isEmpty || password.isEmpty || fullName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all required fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
-    
-    // Email validation
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    if (!emailRegex.hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid email address'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
-    
-    if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password must be at least 6 characters'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
-    
-    return true;
-  }
-
-  bool _validateLoginForm() {
-    final email = _loginEmailController.text.trim();
-    final password = _loginPasswordController.text.trim();
-    
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter email and password'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return false;
-    }
-    
-    return true;
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+      ),
+    );
   }
 
   void _clearSignUpForm() {
@@ -280,11 +165,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _fullNameController.clear();
     _phoneController.clear();
     _addressController.clear();
-  }
-
-  void _clearLoginForm() {
-    _loginEmailController.clear();
-    _loginPasswordController.clear();
   }
 
   @override
@@ -303,48 +183,39 @@ class _ProfilePageState extends State<ProfilePage> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Header
-          Center(
-            child: Column(
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.orange[100],
-                    border: Border.all(color: Colors.orange, width: 3),
-                  ),
-                  child: Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Colors.orange[700],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _userData?['full_name'] ?? 'User',
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  _userData?['email'] ?? '',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.orange[100],
+              border: Border.all(color: Colors.orange, width: 3),
+            ),
+            child: Icon(
+              Icons.person,
+              size: 60,
+              color: Colors.orange[700],
             ),
           ),
+          const SizedBox(height: 16),
+          Text(
+            _userData?['full_name'] ?? 'User',
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          Text(
+            _userData?['email'] ?? '',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 32),
           
-          // Profile Info Card
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -357,11 +228,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildInfoRow(Icons.phone, 'Phone', _userData?['phone'] ?? 'Not set'),
                   const Divider(),
                   _buildInfoRow(Icons.location_on, 'Address', _userData?['address'] ?? 'Not set'),
-                  const Divider(),
-                  _buildInfoRow(Icons.calendar_today, 'Member since', 
-                    _userData?['created_at'] != null 
-                      ? _formatDate(_userData!['created_at'])
-                      : 'Recently'),
                 ],
               ),
             ),
@@ -369,67 +235,26 @@ class _ProfilePageState extends State<ProfilePage> {
           
           const SizedBox(height: 32),
           
-          // Stats Cards
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('Orders', '12', Icons.shopping_bag),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _logout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCard('Wishlist', '8', Icons.favorite),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Action Buttons
-          Column(
-            children: [
-              _buildActionButton(
-                'Edit Profile',
-                Icons.edit,
-                Colors.blue,
-                () {
-                  // TODO: Implement edit profile
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit profile coming soon!')),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildActionButton(
-                'Order History',
-                Icons.history,
-                Colors.green,
-                () {
-                  // TODO: Implement order history
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Order history coming soon!')),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildActionButton(
-                'Settings',
-                Icons.settings,
-                Colors.purple,
-                () {
-                  // TODO: Implement settings
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Settings coming soon!')),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildActionButton(
+              child: const Text(
                 'Logout',
-                Icons.logout,
-                Colors.red,
-                _logout,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -440,25 +265,19 @@ class _ProfilePageState extends State<ProfilePage> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text(
-            'Welcome',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              color: Colors.black,
-            ),
-          ),
+          title: const Text('Welcome', style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 18, 1, 59),
+          ),),
           centerTitle: true,
           backgroundColor: Colors.white,
           elevation: 0,
-          bottom: TabBar(
+          bottom: const TabBar(
             indicatorColor: Colors.orange,
             labelColor: Colors.black,
-            unselectedLabelColor: Colors.grey,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            tabs: const [
+            tabs: [
               Tab(text: 'Login'),
               Tab(text: 'Sign Up'),
             ],
@@ -466,207 +285,150 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         body: TabBarView(
           children: [
-            // LOGIN TAB
+            // LOGIN TAB - with SingleChildScrollView
             SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  // Illustration
-                  Container(
-                    height: 200,
-                    margin: const EdgeInsets.only(bottom: 32),
-                    child: Image.asset(
-                      'assets/images/login_illustration.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Icon(
-                        Icons.login,
-                        size: 120,
-                        color: Colors.orange[300],
-                      ),
-                    ),
+                  Icon(
+                    Icons.login,
+                    size: 120,
+                    color: Colors.orange[300],
                   ),
-                  
-                  // Login Form
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          _buildTextField(
-                            controller: _loginEmailController,
-                            label: 'Email',
-                            icon: Icons.email,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter email';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          _buildTextField(
-                            controller: _loginPasswordController,
-                            label: 'Password',
-                            icon: Icons.lock,
-                            isPassword: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter password';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _login,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 4,
-                              ),
-                              child: const Text(
-                                'Login',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () {
-                              _showForgotPasswordDialog();
-                            },
-                            child: const Text(
-                              'Forgot Password?',
-                              style: TextStyle(color: Colors.orange),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
                   const SizedBox(height: 32),
                   
-                  // Social Login Options
-                  const Text(
-                    'Or login with',
-                    style: TextStyle(color: Colors.grey),
+                  TextField(
+                    controller: _loginEmailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSocialButton(Icons.g_mobiledata, Colors.red, () {}),
-                      const SizedBox(width: 20),
-                      _buildSocialButton(Icons.facebook, Colors.blue, () {}),
-                      const SizedBox(width: 20),
-                      _buildSocialButton(Icons.apple, Colors.black, () {}),
-                    ],
+                  TextField(
+                    controller: _loginPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Login'),
+                    ),
                   ),
                 ],
               ),
             ),
             
-            // SIGNUP TAB
+            // SIGNUP TAB - FIXED WITH SCROLLING
             SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  // Illustration
-                  Container(
-                    height: 180,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    child: Image.asset(
-                      'assets/images/signup_illustration.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Icon(
-                        Icons.person_add,
-                        size: 120,
-                        color: Colors.orange[300],
-                      ),
-                    ),
+                  Icon(
+                    Icons.person_add,
+                    size: 120,
+                    color: Colors.orange[300],
                   ),
+                  const SizedBox(height: 24),
                   
-                  // Signup Form
+                  // SIGNUP FORM WITH BETTER SPACING
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          _buildTextField(
+                          TextField(
                             controller: _fullNameController,
-                            label: 'Full Name *',
-                            icon: Icons.person,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter full name';
-                              }
-                              return null;
-                            },
+                            decoration: InputDecoration(
+                              labelText: 'Full Name *',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 12,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          _buildTextField(
+                          TextField(
                             controller: _emailController,
-                            label: 'Email *',
-                            icon: Icons.email,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter email';
-                              }
-                              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                                return 'Please enter valid email';
-                              }
-                              return null;
-                            },
+                            decoration: InputDecoration(
+                              labelText: 'Email *',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 12,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          _buildTextField(
+                          TextField(
                             controller: _passwordController,
-                            label: 'Password *',
-                            icon: Icons.lock,
-                            isPassword: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter password';
-                              }
-                              if (value.length < 6) {
-                                return 'Password must be 6+ characters';
-                              }
-                              return null;
-                            },
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              labelText: 'Password *',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 12,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          _buildTextField(
+                          TextField(
                             controller: _phoneController,
-                            label: 'Phone Number',
-                            icon: Icons.phone,
-                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: 'Phone Number',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 12,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          _buildTextField(
+                          TextField(
                             controller: _addressController,
-                            label: 'Address',
-                            icon: Icons.location_on,
                             maxLines: 3,
+                            decoration: InputDecoration(
+                              labelText: 'Address',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 12,
+                              ),
+                              alignLabelWithHint: true,
+                            ),
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
@@ -679,14 +441,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                elevation: 4,
                               ),
                               child: const Text(
                                 'Create Account',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -704,44 +464,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                   ),
+                  
+                  // EXTRA SPACING AT BOTTOM FOR BETTER SCROLLING
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool isPassword = false,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.orange),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.orange, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
         ),
       ),
     );
@@ -763,7 +492,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -776,160 +504,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: Colors.orange, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(
-    String label,
-    IconData icon,
-    Color color,
-    VoidCallback onPressed,
-  ) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color.withOpacity(0.1),
-          foregroundColor: color,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: color.withOpacity(0.3)),
-          ),
-          elevation: 0,
-        ),
-        icon: Icon(icon, size: 24),
-        label: Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton(IconData icon, Color color, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(50),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color.withOpacity(0.1),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Icon(icon, size: 30, color: color),
-      ),
-    );
-  }
-
-  String _formatDate(String dateString) {
-    try {
-      final date = DateTime.parse(dateString).toLocal();
-      return '${date.day}/${date.month}/${date.year}';
-    } catch (e) {
-      return 'Recently';
-    }
-  }
-
-  void _showForgotPasswordDialog() {
-    final emailController = TextEditingController();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset Password'),
-        content: TextFormField(
-          controller: emailController,
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            hintText: 'Enter your email address',
-          ),
-          keyboardType: TextInputType.emailAddress,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter email';
-            }
-            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-              return 'Please enter valid email';
-            }
-            return null;
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final email = emailController.text.trim();
-              if (email.isNotEmpty && RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-                try {
-                  await _supabase.auth.resetPasswordForEmail(email);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Password reset email sent! Check your inbox.'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  Navigator.pop(context);
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to send reset email: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-            ),
-            child: const Text('Send Reset Link'),
           ),
         ],
       ),
