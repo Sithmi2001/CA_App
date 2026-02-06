@@ -58,13 +58,7 @@ class _HomePageState extends State<HomePage> {
         'price': '14.00',
         'category': 'Men'
       }, // M1
-      {
-        'id': '7',
-        'name': 'K-#101',
-        'image': 'assets/images/shoe7.jpg',
-        'price': '7.00',
-        'category': 'Kids'
-      }, // K1
+      
       {
         'id': '2',
         'name': 'M-#102',
@@ -72,6 +66,13 @@ class _HomePageState extends State<HomePage> {
         'price': '15.00',
         'category': 'Men'
       }, // M2
+      {
+        'id': '7',
+        'name': 'K-#101',
+        'image': 'assets/images/shoe7.jpg',
+        'price': '7.00',
+        'category': 'Kids'
+      }, // K1
       {
         'id': '13',
         'name': 'L-#101',
@@ -391,7 +392,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/images/nike_logo.png',
+              'assets/images/shoe_logo.png',
               height: 28,
               errorBuilder: (_, __, ___) => const Icon(
                 Icons.sports_soccer,
@@ -401,7 +402,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(width: 8),
             const Text(
-              "StepUp",
+              "SHOE PALACE",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
