@@ -391,7 +391,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/images/nike_logo.png',
+              'assets/images/shoe_logo.png',
               height: 28,
               errorBuilder: (_, __, ___) => const Icon(
                 Icons.sports_soccer,
@@ -401,7 +401,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(width: 8),
             const Text(
-              "StepUp",
+              "SHOE PALACE",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
