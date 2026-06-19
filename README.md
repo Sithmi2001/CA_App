@@ -1,16 +1,20 @@
-# ca_app_new
+# SHOE PALACE, a fully functional e-commerce mobile app
 
-A new Flutter project.
+✨ Key Features:
+- Browse shoes by category (Men, Women, Kids)
+- Real-time search functionality
+- Product details with size & color selection
+- Add to cart with quantity management
+- User authentication (Login/Sign Up)
+- User profile management
+- Persistent cart using Supabase database
 
-## Getting Started
+🛠 Tech Stack:
+- Frontend: Flutter (Dart)
+- Backend: Supabase
+- State Management: SetState
+- Authentication: Custom email/password system
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+https://github.com/user-attachments/assets/5e079aaf-09f6-4884-8af5-86382045cd27
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
